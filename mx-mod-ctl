@@ -19,7 +19,7 @@ declare -A PRODUCT_PATH
 
 # Init function
 init ()
-{		
+{
 	# Check config files
 	if [ -f "$CONFIG_FILE" ]; then
 		load_config
@@ -27,7 +27,7 @@ init ()
 		echo "Error: ${CONFIG_FILE} is not found."
 		exit 1
 	fi
-	
+
 	init_pins
 	init_module_type
 }
@@ -122,13 +122,13 @@ module_power ()
 		print_help
 		exit 1
 	fi
-	
+
 	if [ x"$sel_switch" == x"off" ]; then
 		echo "slot[$sel_slot]: Power off"
-		echo 0 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value 
+		echo 0 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
 	elif [ x"$sel_switch" == x"on" ]; then
 		echo "slot[$sel_slot]: Power on"
-		echo 1 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value 
+		echo 1 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
 	else
 		print_help
 	fi
@@ -155,13 +155,13 @@ module_reset ()
 		echo "Error: module number is invalid."
 		print_help
 	fi
-	
+
 	if [ x"$sel_switch" == x"off" ]; then
 		echo "slot[$sel_slot]: Reset off"
-		echo 0 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value 
+		echo 0 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value
 	elif [ x"$sel_switch" == x"on" ]; then
 		echo "slot[$sel_slot]: Reset on"
-		echo 1 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value 
+		echo 1 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value
 	else
 		print_help
 	fi
@@ -185,7 +185,7 @@ module_sim_slot ()
 		print_help
 		exit 1
 	fi
-	
+
 	if [ $sel_slot -lt 1 ] || [ $sel_slot -gt $NUM_OF_SIM_SLOT ]; then
 		echo "The sim slot pin shall be greater than 0 and less than NUM_OF_SIM_SLOT=${NUM_OF_SIM_SLOT}. Exit."
 		print_help
@@ -243,7 +243,6 @@ init_pins ()
 {
 	# Get pins from arrays (sim slot pin, reset pin and power pin)
 	merge_pins_array=("${POWER_PIN[@]}" "${RESET_PIN[@]}" "${SIM_SLOT_PIN[@]}")
-	
 	# pin initial
 	for i in ${merge_pins_array[@]}
 	do
@@ -251,7 +250,7 @@ init_pins ()
 			echo $i > /sys/class/gpio/export
 			echo out > /sys/class/gpio/gpio${i}/direction
 		fi
-	done	
+	done
 }
 
 init_module_type()
@@ -285,7 +284,7 @@ init_module_type()
 				product_name[$((i))]="Unknown module"
 				module_type[$i]="[[NONE]]"
 				sim_slot_num[$i]="[[NONE]]"
-				;;	
+				;;
 			esac
 		else
 			product_name[$i]="[[NONE]]"
@@ -295,10 +294,9 @@ init_module_type()
 	done
 }
 
-get_sim_status() 
+get_sim_status()
 {
 	sim_gpio_pin=$1
-	
 	if [ x"$sim_gpio_pin" == x"-1" ]; then
 		echo "[[NONE]]"
 		exit 0
@@ -319,14 +317,14 @@ get_sim_status()
 			else
 				sim_pin="[[NONE]]"
 			fi
-			
+
 			echo $sim_pin
 			exit 0
 		fi
 	done
 
 	# if not found pin in array
-	echo "[[NONE]]"	
+	echo "[[NONE]]"
 }
 
 main ()
