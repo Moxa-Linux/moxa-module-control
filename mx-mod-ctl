@@ -1,0 +1,368 @@
+#!/bin/bash
+#
+#    Copyright (C) MOXA Inc. All rights reserved.
+#
+#    This software is distributed under the terms of the
+#    MOXA License.  See the file COPYING-MOXA for details.
+#
+#    /sbin/mx_module_control
+#
+#    Moxa module control utility
+
+VERSION=0.9
+CONFIG_FILE="/etc/moxa-configs/moxa-module-control.json"
+declare -A POWER_PIN
+declare -A RESET_PIN
+declare -A SIM_SLOT_PIN
+declare -A SLOT_NAME
+declare -A PRODUCT_PATH
+
+# Init function
+init ()
+{		
+	# Check config files
+	if [ -f "$CONFIG_FILE" ]; then
+		load_config
+	else
+		echo "Error: ${CONFIG_FILE} is not found."
+		exit 1
+	fi
+	
+	init_pins
+	init_module_type
+}
+
+load_config ()
+{
+	NUM_OF_MODULE_SLOT="$(jq ".NUM_OF_MODULE_SLOT" $CONFIG_FILE --raw-output)"
+	NUM_OF_SIM_SLOT="$(jq ".NUM_OF_SIM_SLOT" $CONFIG_FILE --raw-output)"
+	NUM_OF_SIM_SLOT_PIN="$(jq ".SIM_SLOT_PIN | length" $CONFIG_FILE --raw-output)"
+	NUM_OF_POWER_PIN="$(jq ".POWER_PIN | length" $CONFIG_FILE --raw-output)"
+	NUM_OF_RESET_PIN="$(jq ".RESET_PIN | length" $CONFIG_FILE --raw-output)"
+
+	# "i+1" means module number is started from 1
+	# load power pins
+	for (( i=0; i<${NUM_OF_POWER_PIN} ; i++ ))
+	do
+		POWER_PIN[$((i+1))]="$(jq ".POWER_PIN[$i]" $CONFIG_FILE --raw-output)"
+	done
+
+	# load reset pins
+	for (( i=0; i<${NUM_OF_RESET_PIN} ; i++ ))
+	do
+		RESET_PIN[$((i+1))]="$(jq ".RESET_PIN[$i]" $CONFIG_FILE --raw-output)"
+	done
+
+	# load sim slot pins
+	for (( i=0; i<${NUM_OF_SIM_SLOT_PIN} ; i++ ))
+	do
+		SIM_SLOT_PIN[$((i+1))]="$(jq ".SIM_SLOT_PIN[$i]" $CONFIG_FILE --raw-output)"
+	done
+
+	# load slot name
+	for (( i=0; i<${NUM_OF_MODULE_SLOT} ; i++ ))
+	do
+		SLOT_NAME[$((i+1))]="$(jq ".SLOT_NAME[$i]" $CONFIG_FILE --raw-output)"
+	done
+
+	# load wifi product path
+	for (( i=0; i<${NUM_OF_MODULE_SLOT} ; i++ ))
+	do
+		PRODUCT_PATH[$((i+1))]="$(jq ".PRODUCT_PATH[$i]" $CONFIG_FILE --raw-output)"
+	done
+
+	#__debug__
+}
+
+# for debug
+__debug__ ()
+{
+	echo NUM_OF_MODULE_SLOT=$NUM_OF_MODULE_SLOT
+	echo NUM_OF_SIM_SLOT=$NUM_OF_SIM_SLOT
+	echo NUM_OF_SIM_SLOT_PIN=$NUM_OF_SIM_SLOT_PIN
+	echo NUM_OF_RESET_PIN=$NUM_OF_RESET_PIN
+	echo NUM_OF_POWER_PIN=$NUM_OF_POWER_PIN
+	echo POWER_PIN=${POWER_PIN[@]}
+	echo RESET_PIN=${RESET_PIN[@]}
+	echo SIM_SLOT_PIN=${SIM_SLOT_PIN[@]}
+	echo SLOT_NAME=${SLOT_NAME[@]}
+	echo PRODUCT_PATH=${PRODUCT_PATH[@]}
+}
+
+#list
+module_list ()
+{
+	echo -e "SLOT\t\tSIM SLOT\tMODULE TYPE\tMODULE NAME"
+	echo -e "----------------------------------------------------------------"
+	for ((i=1; i<=$NUM_OF_MODULE_SLOT; i++))
+	do
+		echo -e "slot[${SLOT_NAME[$i]}]:\t${sim_slot_num[$i]}       \t${module_type[$i]}\t${product_name[$i]}"
+	done
+}
+
+#power
+module_power ()
+{
+	sel_switch="$1"
+	sel_slot="$2"
+
+	if [ x"$sel_switch" == x"" ] || [ x"$sel_slot" == x"" ]; then
+		print_help
+		exit 1
+	fi
+
+	if [ $NUM_OF_POWER_PIN -le 0 ] || [ ${POWER_PIN[$sel_slot]} -le 0 ]; then
+		echo "Error: power pin number is invalid."
+		print_help
+		exit 1
+	fi
+
+	if [ $sel_slot -le 0 ] || [ $sel_slot -gt $NUM_OF_MODULE_SLOT ]; then
+		echo "Error: module number is invalid."
+		print_help
+		exit 1
+	fi
+	
+	if [ x"$sel_switch" == x"off" ]; then
+		echo "slot[$sel_slot]: Power off"
+		echo 0 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value 
+	elif [ x"$sel_switch" == x"on" ]; then
+		echo "slot[$sel_slot]: Power on"
+		echo 1 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value 
+	else
+		print_help
+	fi
+}
+
+#reset
+module_reset ()
+{
+	sel_switch="$1"
+	sel_slot="$2"
+
+	if [ x"$sel_switch" == x"" ] || [ x"$sel_slot" == x"" ]; then
+		print_help
+		exit 1
+	fi
+
+	if [ $NUM_OF_RESET_PIN -le 0 ] || [ ${RESET_PIN[$sel_slot]} -le 0 ]; then
+		echo "The reset pin array is empty or invalid. Exit."
+		print_help
+		exit 1
+	fi
+
+	if [ $sel_slot -lt 1 ] || [ $sel_slot -gt $NUM_OF_MODULE_SLOT ]; then
+		echo "Error: module number is invalid."
+		print_help
+	fi
+	
+	if [ x"$sel_switch" == x"off" ]; then
+		echo "slot[$sel_slot]: Reset off"
+		echo 0 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value 
+	elif [ x"$sel_switch" == x"on" ]; then
+		echo "slot[$sel_slot]: Reset on"
+		echo 1 > /sys/class/gpio/gpio${RESET_PIN[$sel_slot]}/value 
+	else
+		print_help
+	fi
+}
+
+#sim_slot
+module_sim_slot ()
+{
+	sel_module="$1"
+	sel_slot="$2"
+	sim_signal=0
+
+	if [ x"$sel_module" == x"" ] || [ x"$sel_slot" == x"" ]; then
+		echo "Please check <module_slot_num> or <sim_slot_num> is valid. Exit."
+		print_help
+		exit 1
+	fi
+
+	if [ $sel_module -lt 1 ] || [ $sel_module -gt $NUM_OF_MODULE_SLOT ]; then
+		echo "The module num shall be greater than 0 and less than NUM_OF_MODULE_SLOT=${NUM_OF_MODULE_SLOT}. Exit."
+		print_help
+		exit 1
+	fi
+	
+	if [ $sel_slot -lt 1 ] || [ $sel_slot -gt $NUM_OF_SIM_SLOT ]; then
+		echo "The sim slot pin shall be greater than 0 and less than NUM_OF_SIM_SLOT=${NUM_OF_SIM_SLOT}. Exit."
+		print_help
+		exit 1
+	fi
+
+	if [ $NUM_OF_SIM_SLOT -le 0 ] || [ ${SIM_SLOT_PIN[$sel_module]} -le 0 ]; then
+		echo "The sim slot pin for module $sel_module is not support. Exit."
+		print_help
+		exit 1
+	fi
+
+	# to check the sel_module is belong to array, ex. 4 of [3,4]
+	for i in ${INDEX_OF_CELL[@]}
+	do
+		if [ x"$i" == x"$sel_module" ]; then
+			# slot 1 --> signal=1
+			# slot 2 --> signal=0
+			[ x"$sel_slot" == x"1" ] && sim_signal=1
+			echo "$sim_signal" > /sys/class/gpio/gpio${SIM_SLOT_PIN[$sel_module]}/value
+			echo "slot[$sel_slot]: Switch Module $sel_module to sim slot $sel_slot"
+			return 0
+		fi
+	done
+
+	echo "This module $sel_module is not cellular module. Exit."
+
+	# slot 1 --> signal=1
+	# slot 2 --> signal=0
+}
+
+version ()
+{
+	echo "$0"
+	echo "Version: $VERSION"
+}
+
+print_help ()
+{
+	echo "Moxa module control utility"
+	echo "Usage: $0 [operation] [args...]"
+	echo "	-p, --power	- power on/off module"
+	echo "			- ex: -p <on|off> <module_slot_num>"
+	echo "	-r, --reset	- reset module"
+	echo "			- ex: -r <on|off> <module_slot_num>"
+	echo "	-s, --sim_slot	- select sim card slot"
+	echo "			- ex: -s <module_slot_num> <sim_slot_num>"
+	echo "	-l, --list	- list module type and product name"
+	echo "	-v, --version	- show utility version"
+	echo "	-h, --help	- print this help message"
+	exit
+}
+
+init_pins ()
+{
+	# Get pins from arrays (sim slot pin, reset pin and power pin)
+	merge_pins_array=("${POWER_PIN[@]}" "${RESET_PIN[@]}" "${SIM_SLOT_PIN[@]}")
+	
+	# pin initial
+	for i in ${merge_pins_array[@]}
+	do
+		if [ ! -e /sys/class/gpio/gpio${i} ] && [ $i -gt 0 ]; then
+			echo $i > /sys/class/gpio/export
+			echo out > /sys/class/gpio/gpio${i}/direction
+		fi
+	done	
+}
+
+init_module_type()
+{
+	for ((i=1; i<=$NUM_OF_MODULE_SLOT; i++))
+	do
+		if [ -e ${PRODUCT_PATH[$i]} ]; then
+			product_id=$(cat ${PRODUCT_PATH[$i]})
+			case $product_id in
+				"9378")
+				product_name[$((i))]="WPEQ-160ACN"
+				module_type[$((i))]="Wi-Fi\t"
+				sim_slot_num[$((i))]="[[NONE]]"
+				;;
+				"15c1")
+				product_name[$((i))]="HUAWEI Mobile V7R11"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
+				"68c0")
+				product_name[$((i))]="Sierra MC7304"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
+				"005b")
+				product_name[$((i))]="Cinterion ELSx"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
+				*)
+				product_name[$((i))]="Unknown module"
+				module_type[$i]="[[NONE]]"
+				sim_slot_num[$i]="[[NONE]]"
+				;;	
+			esac
+		else
+			product_name[$i]="[[NONE]]"
+			module_type[$i]="[[NONE]]"
+			sim_slot_num[$i]="[[NONE]]"
+		fi
+	done
+}
+
+get_sim_status() 
+{
+	sim_gpio_pin=$1
+	
+	if [ x"$sim_gpio_pin" == x"-1" ]; then
+		echo "[[NONE]]"
+		exit 0
+	fi
+
+	# check this pin is contained of array
+	for i in ${SIM_SLOT_PIN[@]}
+	do
+		if [ x"$sim_gpio_pin" == x"$i" ]; then
+			sim_pin=$(cat /sys/class/gpio/gpio${sim_gpio_pin}/value)
+
+			# slot 1 --> signal=1
+			# slot 2 --> signal=0
+			if [ x"$sim_pin" == x"1" ]; then
+				sim_pin=1
+			elif [ x"$sim_pin" == x"0" ]; then
+				sim_pin=2
+			else
+				sim_pin="[[NONE]]"
+			fi
+			
+			echo $sim_pin
+			exit 0
+		fi
+	done
+
+	# if not found pin in array
+	echo "[[NONE]]"	
+}
+
+main ()
+{
+	init
+
+	case ${1} in
+	  -l|--list)
+		module_list
+		exit 0
+		;;
+	  -p|--power)
+		module_power $2 $3
+		exit 0
+		;;
+	  -r|--reset)
+		module_reset $2 $3
+		exit 0
+		;;
+	  -s|--sim_slot)
+		module_sim_slot $2 $3
+		exit 0
+		;;
+	  -v|--version)
+		version
+		exit 0
+		;;
+          -h|--help)
+                print_help
+		exit 0
+                ;;
+	  *)
+		print_help
+		exit 0
+		;;
+	esac
+}
+
+main $1 $2 $3
