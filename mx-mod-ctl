@@ -34,6 +34,13 @@ init ()
 
 load_config ()
 {
+	ENABLE_MODE="$(jq ".ENABLE_MODE" $CONFIG_FILE --raw-output)"
+
+	if [ $ENABLE_MODE -ne 1 ]; then
+		echo "moxa-module-control is disable."
+		exit 0
+	fi
+
 	NUM_OF_MODULE_SLOT="$(jq ".NUM_OF_MODULE_SLOT" $CONFIG_FILE --raw-output)"
 	NUM_OF_SIM_SLOT="$(jq ".NUM_OF_SIM_SLOT" $CONFIG_FILE --raw-output)"
 	NUM_OF_SIM_SLOT_PIN="$(jq ".SIM_SLOT_PIN | length" $CONFIG_FILE --raw-output)"
