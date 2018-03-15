@@ -1,3 +1,10 @@
+moxa-module-control (1.1.0) stretch; urgency=medium
+
+  * Add ELS31 information.
+  * Add sim card active setting feature.
+
+ -- Wes Huang <Wes.Huang@moxa.com>  Thu, 15 Mar 2018 16:40:44 +0800
+
 moxa-module-control (1.0.0+deb9) stretch; urgency=low
 
   * Initial Release.
