@@ -292,7 +292,12 @@ init_module_type()
 				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
 				;;
 				"005b")
-				product_name[$((i))]="Cinterion ELSx"
+				product_name[$((i))]="Cinterion ELS61"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
+				"00a0")
+				product_name[$((i))]="Cinterion ELS31"
 				module_type[$((i))]="Cellular\t"
 				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
 				;;
