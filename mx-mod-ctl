@@ -47,6 +47,7 @@ load_config ()
 	NUM_OF_POWER_PIN="$(jq ".POWER_PIN | length" $CONFIG_FILE --raw-output)"
 	NUM_OF_RESET_PIN="$(jq ".RESET_PIN | length" $CONFIG_FILE --raw-output)"
 	POWER_ACT="$(jq ".POWER_ACT | length" $CONFIG_FILE --raw-output)"
+	SIM_ACT="$(jq ".SIM_ACT | length" $CONFIG_FILE --raw-output)"
 
 	# "i+1" means module number is started from 1
 	# load power pins
@@ -94,6 +95,7 @@ __debug__ ()
 	echo POWER_PIN=${POWER_PIN[@]}
 	echo RESET_PIN=${RESET_PIN[@]}
 	echo SIM_SLOT_PIN=${SIM_SLOT_PIN[@]}
+	echo SIM_ACT=$SIM_ACT
 	echo SLOT_NAME=${SLOT_NAME[@]}
 	echo PRODUCT_PATH=${PRODUCT_PATH[@]}
 }
@@ -134,17 +136,17 @@ module_power ()
 
 	if [ x"$sel_switch" == x"off" ]; then
 		echo "slot[$sel_slot]: Power off"
-		if [ $POWER_ACT ]; then
-			echo 0 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
+		if [ X"${POWER_ACT}" == X"1" ]; then
+			echo 0 > "/sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value"
 		else
-			echo 1 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
+			echo 1 > "/sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value"
 		fi
 	elif [ x"$sel_switch" == x"on" ]; then
 		echo "slot[$sel_slot]: Power on"
-		if [ $POWER_ACT ]; then
-			echo 1 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
+		if [ X"${POWER_ACT}" == X"1" ]; then
+			echo 1 > "/sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value"
 		else
-			echo 0 > /sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value
+			echo 0 > "/sys/class/gpio/gpio${POWER_PIN[$sel_slot]}/value"
 		fi
 	else
 		print_help
@@ -218,7 +220,7 @@ module_sim_slot ()
 	# to check the sel_module is belong to array, ex. 4 of [3,4]
 	for i in ${NUM_OF_MODULE_SLOT[@]}
 	do
-		if [ x"$module_type[$i]" != x"Cellular" ]; then
+		if [ x"${module_type[$i]}" != x"Cellular\t" ]; then
 			echo "This module $sel_module is not cellular module. Exit."
 			print_help
 			exit 0
@@ -226,8 +228,19 @@ module_sim_slot ()
 
 		# slot 1 --> signal=1
 		# slot 2 --> signal=0
-		[ x"$sel_slot" == x"1" ] && sim_signal=1
-
+		if [ x"$sel_slot" == x"1" ]; then
+			if [ X"${SIM_ACT}" == X"1" ]; then
+				sim_signal=1
+			else
+				sim_signal=0
+			fi
+		else
+			if [ X"${SIM_ACT}" == X"1" ]; then
+				sim_signal=0
+			else
+				sim_signal=1
+			fi
+		fi
 		echo "$sim_signal" > /sys/class/gpio/gpio${SIM_SLOT_PIN[$i]}/value
 		echo "slot[$sel_slot]: Switch Module $sel_module to sim slot $sel_slot"
 	done
@@ -332,9 +345,17 @@ get_sim_status()
 			# slot 1 --> signal=1
 			# slot 2 --> signal=0
 			if [ x"$sim_pin" == x"1" ]; then
-				sim_pin=1
+				if [ X"${SIM_PIN}" == X"0" ]; then
+					sim_pin=1
+				else
+					sim_pin=2
+				fi
 			elif [ x"$sim_pin" == x"0" ]; then
-				sim_pin=2
+				if [ X"${SIM_PIN}" == X"1" ]; then
+					sim_pin=2
+				else
+					sim_pin=1
+				fi
 			else
 				sim_pin="[[NONE]]"
 			fi
