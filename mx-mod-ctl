@@ -345,16 +345,16 @@ get_sim_status()
 			# slot 1 --> signal=1
 			# slot 2 --> signal=0
 			if [ x"$sim_pin" == x"1" ]; then
-				if [ X"${SIM_PIN}" == X"0" ]; then
+				if [ X"${SIM_ACT}" == X"1" ]; then
 					sim_pin=1
 				else
 					sim_pin=2
 				fi
 			elif [ x"$sim_pin" == x"0" ]; then
-				if [ X"${SIM_PIN}" == X"1" ]; then
-					sim_pin=2
-				else
+				if [ X"${SIM_ACT}" == X"0" ]; then
 					sim_pin=1
+				else
+					sim_pin=2
 				fi
 			else
 				sim_pin="[[NONE]]"
