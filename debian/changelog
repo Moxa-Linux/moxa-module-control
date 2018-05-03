@@ -1,3 +1,9 @@
+moxa-module-control (1.1.1) stretch; urgency=medium
+
+  * fix: get wrong sim slot status
+
+ -- Wes Huang <Wes.Huang@moxa.com>  Thu, 03 May 2018 15:45:25 +0800
+
 moxa-module-control (1.1.0) stretch; urgency=medium
 
   * Add ELS31 information.
