@@ -1,3 +1,9 @@
+moxa-module-control (1.1.2) stretch; urgency=medium
+
+  * fix: no need to calculate the length of SIM_ACT
+
+ -- Fero JD Zhou <FeroJD.Zhou@moxa.com>  Thu, 19 Jul 2018 19:33:58 +0800
+
 moxa-module-control (1.1.1) stretch; urgency=medium
 
   * fix: get wrong sim slot status
