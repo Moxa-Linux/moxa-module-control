@@ -1,3 +1,9 @@
+moxa-module-control (1.1.3) stretch; urgency=medium
+
+  * feat: support ublox module R410M 02B
+
+ -- Fero JD Zhou <FeroJD.Zhou@moxa.com>  Thu, 09 Aug 2018 07:30:11 +0800
+
 moxa-module-control (1.1.2) stretch; urgency=medium
 
   * fix: no need to calculate the length of SIM_ACT
