@@ -314,6 +314,11 @@ init_module_type()
 				module_type[$((i))]="Cellular\t"
 				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
 				;;
+				"90b2")
+				product_name[$((i))]="Ublox-R410M-02b"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
 				*)
 				product_name[$((i))]="Unknown module"
 				module_type[$i]="[[NONE]]"
