@@ -17,6 +17,11 @@ declare -A SIM_SLOT_PIN
 declare -A SLOT_NAME
 declare -A PRODUCT_PATH
 
+deprecated_annotation() {
+	echo "\"mx-mod-ctl\" is deprecated." >&2
+	echo "Please use the new utility \"mx-module-ctl\"" >&2
+}
+
 # Init function
 init ()
 {
@@ -376,6 +381,7 @@ get_sim_status()
 
 main ()
 {
+	deprecated_annotation
 	init
 
 	case ${1} in
