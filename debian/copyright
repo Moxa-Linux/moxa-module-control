@@ -1,13 +1,14 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: moxa-uart-control
-Source: http://gitlab.syssw.moxa.com:8888/MXcore-Package/moxa-uart-control
+Upstream-Name: moxa-module-control
+Source: http://gitlab.syssw.moxa.com:8888/MXcore-Package/moxa-module-control
 
 Files: *
-Copyright: 2017 MXcore
+Copyright: 2018 MXcore
 License:   Apache-2.0
 
 Files: debian/*
 Copyright: 2017 Elvis Yao (姚家瑋) <ElvisCW.Yao@moxa.com>
+           2018 Ken CJ Chou <KenCJ.Chou@moxa.com>
 License: Apache-2.0
 
 License: Apache-2.0
@@ -25,4 +26,3 @@ License: Apache-2.0
  .
  On Debian systems, the complete text of the Apache version 2.0 license
  can be found in "/usr/share/common-licenses/Apache-2.0".
-
