@@ -1,1 +1,2 @@
-mx-mod-ctl /sbin
+debian/old/mx-mod-ctl /sbin/
+mx-module-ctl /sbin/
