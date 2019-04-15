@@ -1,0 +1,227 @@
+#!/bin/bash -e
+
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Name:
+#	MOXA Module Control Utility
+#
+# Description:
+#	Utility for controlling modules.
+#
+# Authors:
+#	2018	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+VERSION=1.2.0
+CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
+
+# Common functions
+_is_number() {
+	local input=${1}
+	local num_regex='^[0-9]+$'
+
+	if [ -z "${input}" ]; then
+		return 1
+	fi
+
+	if ! [[ ${input} =~ ${num_regex} ]]; then
+		return 1
+	fi
+	return 0
+}
+
+_is_slot_valid() {
+	local slot=${1}
+
+	if ! _is_number ${slot}; then
+		return 1
+	fi
+
+	if [ ${slot} -le 0 ] || [ ${slot} -gt ${NUM_OF_MODULE_SLOTS} ]; then
+		return 1
+	fi
+	return 0
+}
+
+_set_gpio() {
+	local gpio=${1}
+	local direction=${2}
+	local value=${3}
+
+	if [ ! -e "/sys/class/gpio/gpio${gpio}" ]; then
+		echo ${gpio} > "/sys/class/gpio/export"
+		echo ${direction} > "/sys/class/gpio/gpio${gpio}/direction"
+	fi
+	if [ X"${direction}" == X"out" ]; then
+		echo ${value} > "/sys/class/gpio/gpio${gpio}/value"
+	fi
+}
+
+usage() {
+	echo -e "Usage:"
+	echo -e "\tmx-module-ctl [Options]"
+	echo -e "Operations:"
+	echo -e "\t-v,--version"
+	echo -e "\t\tShow utility version"
+	echo -e "\t-l,--list"
+	echo -e "\t\tList module slots"
+	echo -e "\t-s,--slot <module_slot_id>"
+	echo -e "\t\tSelect slot"
+	echo -e "\t-p,--power on|off"
+	echo -e "\t\tPower on/off module"
+	echo -e "\t-r,--reset on|off"
+	echo -e "\t\tReset module"
+	echo -e "\t-i,--sim 1|2"
+	echo -e "\t\tSelect sim card slot"
+	echo -e ""
+	echo -e "Example:"
+	echo -e "\tPower on module 1"
+	echo -e "\t# mx-module-ctl -s 1 -p on"
+	echo -e ""
+	echo -e "\tReset module 2"
+	echo -e "\t# mx-module-ctl -s 2 -r on"
+	echo -e ""
+	echo -e "\tSelect SIM 2 for module 1"
+	echo -e "\t# mx-module-ctl -s 1 -i 2"
+	return 0
+}
+
+load_config() {
+	if [ ! -f ${CONFIG_FILE} ]; then
+		echo "Error: config file not found." >&2
+                return 1
+	fi
+
+	source ${CONFIG_FILE}
+	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || ! _is_number ${NUM_OF_MODULE_SLOTS}; then
+		echo "Error: Can not load number of module slots." >&2
+		return 1
+	fi
+	return 0
+}
+
+list_module_slots() {
+	echo "Number of module slots: ${NUM_OF_MODULE_SLOTS}"
+	for module in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
+		echo -n "${module}: "
+		module_get_path ${module}
+	done
+	return 0
+}
+
+do_action() {
+	local slot=${1}
+	local action=${2}
+	local act_arg=${3}
+
+	case "${action}" in
+	"NONE")
+		echo "Moxa module control utility"
+		echo "Version: ${VERSION}"
+		echo "---------------------------"
+		usage
+		;;
+	"POWER")
+		if [ "${act_arg}" == "on" ]; then
+			module_power_on ${slot}
+		elif [ "${act_arg}" == "off" ]; then
+			module_power_off ${slot}
+		else
+			echo "Error: Unknown power action: ${act_arg}" >&2
+			return 1
+		fi
+		;;
+	"RESET")
+		if [ "${act_arg}" == "on" ]; then
+			module_reset_on ${slot}
+		elif [ "${act_arg}" == "off" ]; then
+			module_reset_off ${slot}
+		else
+			echo "Error: Unknown reset action: ${act_arg}" >&2
+			return 1
+		fi
+		;;
+	"SWITCH_SIM")
+		if [ "${act_arg}" != "1" ] && [ "${act_arg}" != "2" ]; then
+			echo "Error: Invalid sim slot number: ${act_arg}" >&2
+			return 1
+		fi
+		module_switch_sim ${slot} ${act_arg}
+		;;
+	*)
+		echo "Error: Unknown action: ${action}" >&2
+		echo "Please run \`mx-module-ctl -h\` for help." >&2
+		return 1
+		;;
+	esac
+	return 0
+}
+
+main() {
+	local slot=1
+	local action="NONE"
+	local act_arg
+
+	load_config
+	while true; do
+		case "${1}" in
+		"-v"|"--version")
+			echo "Version: ${VERSION}"
+			return 0
+			;;
+		"-h"|"--help")
+			usage
+			return 0
+			;;
+		"-l"|"--list")
+			list_module_slots
+			return 0
+			;;
+		"-s"|"--slot")
+			slot=${2}
+			shift 2
+			;;
+		"-p"|"--power")
+			action="POWER"
+			act_arg=${2}
+			shift 2
+			;;
+		"-r"|"--reset")
+			action="RESET"
+			act_arg=${2}
+			shift 2
+			;;
+		"-i"|"--sim")
+			action="SWITCH_SIM"
+			act_arg=${2}
+			shift 2
+			;;
+		"")
+			break
+			;;
+		*)
+			echo "Error: Unknown option: ${1}" >&2
+			echo "Please run \`mx-module-ctl -h\` for help." >&2
+			return 1
+			;;
+		esac
+	done
+
+	if [ ${NUM_OF_MODULE_SLOTS} -eq 0 ]; then
+		echo "No module slot on this device." >&2
+		return 1
+	fi
+
+	if ! _is_slot_valid ${slot}; then
+		echo "Error: Invalid slot index: ${slot}" >&2
+		return 1
+	fi
+
+	do_action ${slot} ${action} ${act_arg}
+
+	return 0
+}
+
+main "$@"
+exit 0
