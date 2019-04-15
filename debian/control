@@ -1,15 +1,18 @@
 Source: moxa-module-control
 Section: utils
 Priority: optional
-Maintainer: Elvis Yao (姚家瑋) <ElvisCW.Yao@moxa.com>
+Maintainer: Ken CJ Chou <KenCJ.Chou@moxa.com>
+Uploaders: Elvis Yao (姚家瑋) <ElvisCW.Yao@moxa.com>
+           Wes Huang <Wes.Huang@moxa.com>
+           Fero JD Zhou <FeroJD.Zhou@moxa.com>
 Build-Depends: debhelper (>= 10)
 Standards-Version: 4.1.2
 Homepage: http://www.moxa.com/
 
 Package: moxa-module-control
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, jq
 Description: Moxa Module Control Utility
  Utility to control modules (e.g. celluar or WiFi module)
  in Moxa computers, including power on/off, reset, select
- sim slots for cellular module and list modules information.
+ sim slots for cellular module.
