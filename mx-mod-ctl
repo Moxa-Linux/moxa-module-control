@@ -9,7 +9,7 @@
 #
 #    Moxa module control utility
 
-VERSION=1.1.2
+VERSION=1.1.3
 CONFIG_FILE="/etc/moxa-configs/moxa-module-control.json"
 declare -A POWER_PIN
 declare -A RESET_PIN
@@ -311,6 +311,11 @@ init_module_type()
 				;;
 				"00a0")
 				product_name[$((i))]="Cinterion ELS31"
+				module_type[$((i))]="Cellular\t"
+				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
+				;;
+				"90b2")
+				product_name[$((i))]="Ublox-R410M-02b"
 				module_type[$((i))]="Cellular\t"
 				sim_slot_num[$((i))]=$(get_sim_status ${SIM_SLOT_PIN[$i]})
 				;;
