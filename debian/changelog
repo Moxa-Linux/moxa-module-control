@@ -1,0 +1,5 @@
+moxa-module-control (1.0.0+deb9) stretch; urgency=low
+
+  * Initial Release.
+
+ -- Elvis Yao (姚家瑋) <ElvisCW.Yao@moxa.com>  Sat, 23 Dec 2017 12:38:06 +0800
