@@ -9,7 +9,7 @@
 #
 #    Moxa module control utility
 
-VERSION=1.1.1
+VERSION=1.1.2
 CONFIG_FILE="/etc/moxa-configs/moxa-module-control.json"
 declare -A POWER_PIN
 declare -A RESET_PIN
@@ -47,7 +47,7 @@ load_config ()
 	NUM_OF_POWER_PIN="$(jq ".POWER_PIN | length" $CONFIG_FILE --raw-output)"
 	NUM_OF_RESET_PIN="$(jq ".RESET_PIN | length" $CONFIG_FILE --raw-output)"
 	POWER_ACT="$(jq ".POWER_ACT | length" $CONFIG_FILE --raw-output)"
-	SIM_ACT="$(jq ".SIM_ACT | length" $CONFIG_FILE --raw-output)"
+	SIM_ACT="$(jq ".SIM_ACT" $CONFIG_FILE --raw-output)"
 
 	# "i+1" means module number is started from 1
 	# load power pins
