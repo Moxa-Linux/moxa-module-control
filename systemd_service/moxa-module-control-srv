@@ -1,0 +1,32 @@
+#!/bin/bash -e
+
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
+
+[ ! -f ${CONFIG_FILE} ] && exit 0
+source ${CONFIG_FILE}
+
+case "${1}" in
+"start")
+	if type -t module_service_start | grep -q "function"; then
+		module_service_start
+	fi
+	;;
+"stop")
+	if type -t module_service_stop | grep -q "function"; then
+		module_service_stop
+	fi
+	;;
+*)
+	echo "Usage: $0 start|stop" >&2
+	exit 99
+	;;
+esac
+exit 0
