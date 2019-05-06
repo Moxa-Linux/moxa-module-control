@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-#
 # SPDX-License-Identifier: Apache-2.0
 #
 # Name:
@@ -9,8 +8,8 @@
 # Description:
 #	Utility for controlling modules.
 #
-# Authors:
-#	2018	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2018-2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
 #
 
 VERSION=1.2.0
