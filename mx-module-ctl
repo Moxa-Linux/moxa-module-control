@@ -15,6 +15,7 @@
 
 VERSION=1.2.0
 CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
+MODULE_STATUS_DIR=/etc/moxa-module-control/status.d
 
 #
 # Common functions
@@ -106,12 +107,15 @@ load_config() {
 }
 
 list_module_slots() {
-	echo "Number of module slots: ${NUM_OF_MODULE_SLOTS}"
-	for module in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
-		echo -n "${module}: "
-		module_get_path ${module}
+	echo "NUM_OF_MODULE_SLOTS=${NUM_OF_MODULE_SLOTS}"
+
+	for i in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
+		if [ -f ${MODULE_STATUS_DIR}/${i}.status ]; then
+			while read line; do
+				echo "MODULE_SLOT_${i}_${line}"
+			done < ${MODULE_STATUS_DIR}/${i}.status
+		fi
 	done
-	return 0
 }
 
 do_action() {
