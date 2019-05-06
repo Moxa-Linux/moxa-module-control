@@ -1,0 +1,22 @@
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+ENV{MX_MOD_CTRL_MPROBE}="NULL"
+
+# Wi-Fi modules
+ENV{SUBSYSTEM}=="net", ENV{DEVTYPE}=="wlan", ENV{MX_MOD_CTRL_MPROBE}="WIFI"
+
+# Cellular modules
+ENV{ID_VENDOR_ID}=="1199", ENV{ID_MODEL_ID}=="68c0", ENV{MX_MOD_CTRL_MPROBE}="SIERRA_MC73XX"
+ENV{ID_VENDOR_ID}=="1e2d", ENV{ID_MODEL_ID}=="005b", ENV{MX_MOD_CTRL_MPROBE}="GEMALTO_ELS61"
+ENV{ID_VENDOR_ID}=="12d1", ENV{ID_MODEL_ID}=="15c1", ENV{MX_MOD_CTRL_MPROBE}="HUAWEI_ME909S_821"
+ENV{ID_VENDOR_ID}=="1bc7", ENV{ID_MODEL_ID}=="1201", ENV{MX_MOD_CTRL_MPROBE}="TELIT_LE910C1"
+ENV{ID_VENDOR_ID}=="1546", ENV{ID_MODEL_ID}=="1141", ENV{MX_MOD_CTRL_MPROBE}="UBLOX_TOBY_L2XX"
+ENV{ID_VENDOR_ID}=="1546", ENV{ID_MODEL_ID}=="1146", ENV{MX_MOD_CTRL_MPROBE}="UBLOX_TOBY_L2XX"
+
+# Do actions
+ENV{MX_MOD_CTRL_MPROBE}!="NULL", RUN+="/etc/moxa-module-control/moxa-module-control-probe"

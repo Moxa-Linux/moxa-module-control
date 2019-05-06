@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+#
+# Description:
+#	probe function for "Huawei ME909s-821" module.
+#	vendor ID: "12d1", product ID: "15c1"
+#
+# Authors:
+#	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+probe() {
+	local dev_id="${MODULE_SYSPATH##*/}"
+
+	MODULE_TYPE="Cellular"
+	MODULE_NAME="Huawei ME909s-821"
+	MODULE_INTERFACE="$(ls ${MODULE_SYSPATH}/${dev_id}\:2.0/net/)"
+	MODULE_MODEM_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:2.2/ | grep "^tty")"
+	MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:2.4/ | grep "^tty")"
+}

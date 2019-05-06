@@ -1,0 +1,84 @@
+#!/bin/bash -e
+
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
+MODULE_PROBE_DIR=/etc/moxa-module-control/modules.d
+MODULE_STATUS_DIR=/etc/moxa-module-control/status.d
+MODULE_SLOT=0
+MODULE_SYSPATH=""
+
+load_config() {
+	[ ! -f ${CONFIG_FILE} ] && exit
+	source ${CONFIG_FILE}
+
+	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || 
+		! _is_number ${NUM_OF_MODULE_SLOTS} ||
+		[ ${NUM_OF_MODULE_SLOTS} -eq 0 ]; then
+		exit
+	fi
+}
+
+get_module_slot_and_path() {
+	local syspaths_var syspaths syspath
+
+	# check if DEVPATH matches any module slot on platform
+	for i in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
+		syspaths_var="MODULE_SLOT_${i}_SYSPATHS"
+		syspaths=${!syspaths_var}
+		[ ${#syspaths[@]} -eq 0 ] && continue
+
+		for syspath in "${syspaths[@]}"; do
+			# "devices" directory will be mounted at "/sys/"
+			if [[ "/sys${DEVPATH}" == "${syspath}"* ]]; then
+				MODULE_SLOT=${i}
+				MODULE_SYSPATH="${syspath}"
+				MODULE_STATUS_FILE=${MODULE_STATUS_DIR}/${MODULE_SLOT}.status
+				break
+			fi
+		done
+	done
+	# exit if no module slot on platform matches DEVPATH
+	[ ${MODULE_SLOT} -eq 0 ] && exit || return 0
+}
+
+probe_module() {
+	[ ! -f ${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe ] && exit
+	source ${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe
+	probe
+}
+
+show_module_info() {
+	echo "DETECT=1"
+	echo "TYPE=\"${MODULE_TYPE}\""
+	echo "NAME=\"${MODULE_NAME}\""
+	[ -n "${MODULE_USB_MODE}" ] && echo "USB_MODE=\"${MODULE_USB_MODE}\""
+	[ -n "${MODULE_INTERFACE}" ] && echo "INTERFACE=${MODULE_INTERFACE}"
+	[ -n "${MODULE_QMI_PORT}" ] && echo "QMI_PORT=${MODULE_QMI_PORT}"
+	[ -n "${MODULE_MODEM_PORT}" ] && echo "MODEM_PORT=${MODULE_MODEM_PORT}"
+	[ -n "${MODULE_AT_PORT}" ] && echo "AT_PORT=${MODULE_AT_PORT}"
+	[ -n "${MODULE_AT_PORT2}" ] && echo "AT_PORT2=${MODULE_AT_PORT2}"
+	[ -n "${MODULE_GPS_PORT}" ] && echo "GPS_PORT=${MODULE_GPS_PORT}"
+}
+
+main() {
+	load_config
+	get_module_slot_and_path
+
+	[ ! -d ${MODULE_STATUS_DIR} ] && mkdir -p ${MODULE_STATUS_DIR}
+	if [ "${ACTION}" == "add" ]; then
+		probe_module
+		show_module_info > ${MODULE_STATUS_FILE}
+	elif [ "${ACTION}" == "remove" ]; then
+		echo "DETECT=0" > ${MODULE_STATUS_FILE}
+	fi
+}
+
+main
+exit
