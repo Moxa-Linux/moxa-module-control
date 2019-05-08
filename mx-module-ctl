@@ -36,7 +36,7 @@ _is_number() {
 _is_slot_valid() {
 	local slot=${1}
 
-	if ! _is_number ${slot}; then
+	if ! _is_number "${slot}"; then
 		return 1
 	fi
 
@@ -52,11 +52,11 @@ _set_gpio() {
 	local value=${3}
 
 	if [ ! -e "/sys/class/gpio/gpio${gpio}" ]; then
-		echo ${gpio} > "/sys/class/gpio/export"
-		echo ${direction} > "/sys/class/gpio/gpio${gpio}/direction"
+		echo "${gpio}" > "/sys/class/gpio/export"
+		echo "${direction}" > "/sys/class/gpio/gpio${gpio}/direction"
 	fi
 	if [ X"${direction}" == X"out" ]; then
-		echo ${value} > "/sys/class/gpio/gpio${gpio}/value"
+		echo "${value}" > "/sys/class/gpio/gpio${gpio}/value"
 	fi
 }
 
@@ -93,13 +93,13 @@ usage() {
 }
 
 load_config() {
-	if [ ! -f ${CONFIG_FILE} ]; then
+	if [ ! -f "${CONFIG_FILE}" ]; then
 		echo "Error: config file \`${CONFIG_FILE}\` not found." >&2
 		return 1
 	fi
-	source ${CONFIG_FILE}
+	source "${CONFIG_FILE}"
 
-	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || ! _is_number ${NUM_OF_MODULE_SLOTS}; then
+	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || ! _is_number "${NUM_OF_MODULE_SLOTS}"; then
 		echo "Error: Can not load number of module slots." >&2
 		return 1
 	fi
@@ -108,11 +108,11 @@ load_config() {
 list_module_slots() {
 	echo "NUM_OF_MODULE_SLOTS=${NUM_OF_MODULE_SLOTS}"
 
-	for i in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
-		if [ -f ${MODULE_STATUS_DIR}/${i}.status ]; then
-			while read line; do
+	for i in $(seq 1 "${NUM_OF_MODULE_SLOTS}"); do
+		if [ -f "${MODULE_STATUS_DIR}/${i}.status" ]; then
+			while read -r line; do
 				echo "MODULE_SLOT_${i}_${line}"
-			done < ${MODULE_STATUS_DIR}/${i}.status
+			done < "${MODULE_STATUS_DIR}/${i}.status"
 		fi
 	done
 }
@@ -139,7 +139,7 @@ do_action() {
 		echo "No module slot on this device." >&2
 		return 1
 	fi
-	if ! _is_slot_valid ${slot}; then
+	if ! _is_slot_valid "${slot}"; then
 		echo "Error: Invalid slot index: ${slot}" >&2
 		return 1
 	fi
@@ -147,18 +147,18 @@ do_action() {
 	# Actions that need slot ID
 	if [ "${action}" == "POWER" ]; then
 		if [ "${act_arg}" == "on" ]; then
-			module_power_on ${slot}
+			module_power_on "${slot}"
 		elif [ "${act_arg}" == "off" ]; then
-			module_power_off ${slot}
+			module_power_off "${slot}"
 		else
 			echo "Error: Unknown power action: ${act_arg}" >&2
 			return 1
 		fi
 	elif [ "${action}" == "RESET" ]; then
 		if [ "${act_arg}" == "on" ]; then
-			module_reset_on ${slot}
+			module_reset_on "${slot}"
 		elif [ "${act_arg}" == "off" ]; then
-			module_reset_off ${slot}
+			module_reset_off "${slot}"
 		else
 			echo "Error: Unknown reset action: ${act_arg}" >&2
 			return 1
@@ -168,7 +168,7 @@ do_action() {
 			echo "Error: Invalid sim slot number: ${act_arg}" >&2
 			return 1
 		fi
-		module_switch_sim ${slot} ${act_arg}
+		module_switch_sim "${slot}" "${act_arg}"
 	else
 		echo "Error: Unknown action: ${action}" >&2
 		echo "Please run \`mx-module-ctl -h\` for help." >&2
@@ -226,7 +226,7 @@ main() {
 	done
 
 	load_config
-	do_action ${action} ${slot} ${act_arg}
+	do_action "${action}" "${slot}" "${act_arg}"
 }
 
 main "$@"

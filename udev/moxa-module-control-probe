@@ -15,11 +15,11 @@ MODULE_SLOT=0
 MODULE_SYSPATH=""
 
 load_config() {
-	[ ! -f ${CONFIG_FILE} ] && exit
-	source ${CONFIG_FILE}
+	[ ! -f "${CONFIG_FILE}" ] && exit
+	source "${CONFIG_FILE}"
 
 	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || 
-		! _is_number ${NUM_OF_MODULE_SLOTS} ||
+		! _is_number "${NUM_OF_MODULE_SLOTS}" ||
 		[ ${NUM_OF_MODULE_SLOTS} -eq 0 ]; then
 		exit
 	fi
@@ -29,7 +29,7 @@ get_module_slot_and_path() {
 	local syspaths_var syspaths syspath
 
 	# check if DEVPATH matches any module slot on platform
-	for i in $(seq 1 ${NUM_OF_MODULE_SLOTS}); do
+	for i in $(seq 1 "${NUM_OF_MODULE_SLOTS}"); do
 		syspaths_var="MODULE_SLOT_${i}_SYSPATHS"
 		syspaths=${!syspaths_var}
 		[ ${#syspaths[@]} -eq 0 ] && continue
@@ -49,8 +49,8 @@ get_module_slot_and_path() {
 }
 
 probe_module() {
-	[ ! -f ${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe ] && exit
-	source ${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe
+	[ ! -f "${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe" ] && exit
+	source "${MODULE_PROBE_DIR}/${MX_MOD_CTRL_MPROBE}.probe"
 	probe
 }
 
@@ -74,9 +74,9 @@ main() {
 	[ ! -d ${MODULE_STATUS_DIR} ] && mkdir -p ${MODULE_STATUS_DIR}
 	if [ "${ACTION}" == "add" ]; then
 		probe_module
-		show_module_info > ${MODULE_STATUS_FILE}
+		show_module_info > "${MODULE_STATUS_FILE}"
 	elif [ "${ACTION}" == "remove" ]; then
-		echo "DETECT=0" > ${MODULE_STATUS_FILE}
+		echo "DETECT=0" > "${MODULE_STATUS_FILE}"
 	fi
 }
 

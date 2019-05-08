@@ -10,8 +10,8 @@
 
 CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
 
-[ ! -f ${CONFIG_FILE} ] && exit 0
-source ${CONFIG_FILE}
+[ ! -f "${CONFIG_FILE}" ] && exit 0
+source "${CONFIG_FILE}"
 
 case "${1}" in
 "start")
