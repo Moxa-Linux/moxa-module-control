@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+#
+# Description:
+#	probe function for "Gemalto ELS61" module.
+#	vendor ID: "1e2d", product ID: "005b"
+#
+# Authors:
+#	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+probe() {
+	local dev_id="${MODULE_SYSPATH##*/}"
+
+	MODULE_TYPE="Cellular"
+	MODULE_NAME="Gemalto ELS61"
+	MODULE_INTERFACE="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.10/net/)"
+	MODULE_MODEM_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.0/tty/)"
+	MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.2/tty/)"
+	MODULE_AT_PORT2="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.4/tty/)"
+}

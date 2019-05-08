@@ -1,0 +1,11 @@
+[Unit]
+Description=Moxa module control service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/moxa-module-control/moxa-module-control-srv start
+ExecStop=/etc/moxa-module-control/moxa-module-control-srv stop
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+#
+# Description:
+#	probe function for "u-blox TOBY L2XX" series module.
+#	A part of u-blox TOBY L2 series module use a USB2.0 Hub (0424/2513)
+#	to connect u-blox GNSS (1546/01a8) & u-blox cellular (1546/114x) modules.
+#
+#	The product ID of module is different under different usb mode:
+#		- 1140: initial mode to load the specified usb mode as follows
+#		- 1141: ppp   (AT+UUSBCONF=0)
+#		- 1143: ecm   (AT+UUSBCONF=2)
+#		- 1146: rndis (AT+UUSBCONF=3)
+#
+# Authors:
+#	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+probe() {
+	local dev_id="${MODULE_SYSPATH##*/}"
+	local idVendor idProduct subpath
+
+	MODULE_TYPE="Cellular"
+	MODULE_NAME="u-blox TOBY L2 series"
+
+	idVendor="$(cat ${MODULE_SYSPATH}/idVendor)"
+	idProduct="$(cat ${MODULE_SYSPATH}/idProduct)"
+
+	if [ "${idVendor}" == "0424" ] && [ "${idProduct}" == "2513" ]; then
+		# With Hub
+		for i in $(seq 1 3); do
+			subpath=${dev_id}.${i}
+			[ ! -d ${MODULE_SYSPATH}/${subpath} ] && continue
+
+			idProduct="$(cat ${MODULE_SYSPATH}/${subpath}/idProduct)"
+			if [ "${idProduct}" == "01a8" ]; then
+				MODULE_GPS_PORT="$(ls ${MODULE_SYSPATH}/${subpath}/${subpath}\:1.0/tty/)"
+			elif [ "${idProduct}" == "1141" ]; then
+				MODULE_USB_MODE="PPP"
+				MODULE_MODEM_PORT="$(ls ${MODULE_SYSPATH}/${subpath}/${subpath}\:1.2/tty/)"
+				MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${subpath}/${subpath}\:1.0/tty/)"
+			elif [ "${idProduct}" == "1146" ]; then
+				MODULE_USB_MODE="RNDIS"
+				MODULE_INTERFACE="$(ls ${MODULE_SYSPATH}/${subpath}/${subpath}\:1.0/net/)"
+				MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${subpath}/${subpath}\:1.2/tty/)"
+			fi
+		done
+	elif [ "${idVendor}" == "1546" ]; then
+		# Without Hub
+		if [ "${idProduct}" == "1141" ]; then
+			MODULE_USB_MODE="PPP"
+			MODULE_MODEM_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.2/tty/)"
+			MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.0/tty/)"
+		elif [ "${idProduct}" == "1146" ]; then
+			MODULE_USB_MODE="RNDIS"
+			MODULE_INTERFACE="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.0/net/)"
+			MODULE_AT_PORT="$(ls ${MODULE_SYSPATH}/${dev_id}\:1.2/tty/)"
+		fi
+	fi
+}
