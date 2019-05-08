@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# This file is part of `moxa-module-control`
+#
+# Copyright (C) Moxa, Inc. All rights reserved.
+# Copyright (C) 2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+#
+# Description:
+#	probe function for Wi-Fi modules.
+#		- SparkLAN WPEQ-160ACN vendor ID: "0cf3", product ID: "9378"
+#
+# Authors:
+#	Ken CJ Chou	<KenCJ.Chou@moxa.com>
+#
+
+probe() {
+	local idVendor idProduct
+
+	idVendor="$(cat ${MODULE_SYSPATH}/idVendor)"
+	idProduct="$(cat ${MODULE_SYSPATH}/idProduct)"
+
+	MODULE_TYPE="WiFi"
+	if [ "${idVendor}" == "0cf3" ] && [ "${idProduct}" == "9378" ]; then
+		MODULE_NAME="SparkLAN WPEQ-160ACN"
+		MODULE_INTERFACE="$(ls ${MODULE_SYSPATH}/net/)"
+	else
+		MODULE_NAME="Unknown"
+	fi
+}
