@@ -113,6 +113,8 @@ list_module_slots() {
 			while read -r line; do
 				echo "MODULE_SLOT_${i}_${line}"
 			done < "${MODULE_STATUS_DIR}/${i}.status"
+		else
+			echo "MODULE_SLOT_${i}_DETECT=0"
 		fi
 	done
 }
