@@ -19,7 +19,7 @@ load_config() {
 	source "${CONFIG_FILE}"
 
 	if [ -z "${NUM_OF_MODULE_SLOTS}" ] || 
-		! _is_number "${NUM_OF_MODULE_SLOTS}" ||
+		! [[ ${NUM_OF_MODULE_SLOTS} =~ ^[0-9]+$ ]] ||
 		[ ${NUM_OF_MODULE_SLOTS} -eq 0 ]; then
 		exit
 	fi
