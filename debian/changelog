@@ -1,3 +1,9 @@
+moxa-module-control (1.3.2+deb9) stretch; urgency=medium
+
+  * refactor: remove udev probing feature
+
+ -- Remus Wu <remusty.wu@moxa.com>  Thu, 16 Jan 2020 15:48:05 +0800
+
 moxa-module-control (1.3.1+deb9) stretch; urgency=low
 
   * fix: fix program flow
