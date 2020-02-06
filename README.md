@@ -16,28 +16,28 @@ The modules on platform should be defined in configuration file `/etc/moxa-confi
 
 ## Usage
 
-Usage of `mx-module-ctl` utility version "1.3.0":
+Usage of `mx-module-ctl` utility version "1.3.3":
 ```
 Usage:
 	mx-module-ctl [Options]
 
 Operations:
-	-v,--version
+	-v, --version
 		Show utility version
-	-s,--slot <module_slot_id>
-		Select slot
-	-p,--power on|off
+	-s, --slot <module_slot_id>
+		Select module slot
+	-p, --power on|off
 		Power on/off module
-	-r,--reset on|off
-		Reset module
-	-i,--sim 1|2
+	-r, --reset on|off
+		Set reset pin to high(on)/low(off) to slot
+	-i, --sim 1|2
 		Select sim card slot
 
 Example:
 	Power on module 1
 	# mx-module-ctl -s 1 -p on
 
-	Reset module 2
+	Set module 2 reset pin to high
 	# mx-module-ctl -s 2 -r on
 
 	Select SIM 2 for module 1
