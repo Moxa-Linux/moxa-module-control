@@ -13,6 +13,6 @@ Package: moxa-module-control
 Architecture: all
 Depends: ${misc:Depends}, jq
 Description: Moxa Module Control Utility
- Utility to control modules (e.g. celluar or WiFi module)
+ Utility to control modules (e.g. Cellular or WiFi module)
  in Moxa computers, including power on/off, reset, select
  sim slots for cellular module.
