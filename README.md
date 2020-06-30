@@ -16,7 +16,7 @@ The modules on platform should be defined in configuration file `/etc/moxa-confi
 
 ## Usage
 
-Usage of `mx-module-ctl` utility version "1.4.0":
+Usage of `mx-module-ctl` utility version "1.5.0":
 ```
 Usage:
 	mx-module-ctl [Options]
@@ -34,7 +34,8 @@ Operations:
 		Select sim card slot
 	-P, --power-status
 		Get power status
-
+	-I, --sim-slot
+		Get SIM slot
 
 Example:
 	Power on module 1
@@ -48,6 +49,9 @@ Example:
 
 	Get power status of module 1
 	# mx-module-ctl -s 1 -P
+
+	Get current SIM slot of module 1
+	# mx-module-ctl -s 1 -I
 ```
 
 ## Documentation
