@@ -2,7 +2,7 @@
 
 The configuration file is located at `/etc/moxa-configs/moxa-module-control.conf`.
 
-This document is for configuration file version "1.3.0". It consists of 5 parts.
+This document is for configuration file version "1.4.0". It consists of 5 parts.
 
 ---
 ### 1. Config file version
@@ -11,7 +11,7 @@ This part is quite simple.
 
 #### Example
 ```
-CONFIG_VERSION=1.3.0
+CONFIG_VERSION=1.4.0
 ```
 
 ---
@@ -64,6 +64,10 @@ This part contains interfaces for `mx-module-ctl` to control modules on platform
 	* Number of arguments: 2
 		* $1: module slot ID
 		* $2: module SIM slot number
+* `module_power_status`
+	* Read the module power status
+	* Number of arguments: 1
+		* $1: module slot ID
 
 #### Example
 ```
@@ -92,6 +96,14 @@ module_switch_sim() {
 		_set_gpio 480 "out" 0
 	fi
 }
+
+module_power_status() {
+	local slot=${1}
+	if [ ${slot} -eq 1 ]; then
+		gpio_get_value 480
+	fi
+}
+
 ```
 
 ---
