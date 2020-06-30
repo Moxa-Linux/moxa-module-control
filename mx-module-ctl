@@ -12,7 +12,7 @@
 # Copyright (C) 2018-2019	Ken CJ Chou	<KenCJ.Chou@moxa.com>
 #
 
-VERSION=1.4.0
+VERSION=1.5.0
 CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
 MODULE_STATUS_DIR=/etc/moxa-module-control/status.d
 
@@ -94,6 +94,8 @@ usage() {
 	echo -e "		Select sim card slot"
 	echo -e "	-P, --power-status"
 	echo -e "		Get power status"
+	echo -e "	-I, --sim-slot"
+	echo -e "		Get SIM slot"
 	echo -e ""
 	echo -e "Example:"
 	echo -e "	Power on module 1"
@@ -107,6 +109,9 @@ usage() {
 	echo -e ""
 	echo -e "	Get power status of module 1"
 	echo -e "	# mx-module-ctl -s 1 -P"
+	echo -e ""
+	echo -e "	Get current SIM slot of module 1"
+	echo -e "	# mx-module-ctl -s 1 -I"
 }
 
 load_config() {
@@ -173,6 +178,13 @@ do_action() {
 		module_switch_sim "${slot}" "${act_arg}"
 	elif [ "${action}" == "POWER_STATUS" ]; then
 		module_power_status "${slot}"
+	elif [ "${action}" == "SIM_SLOT" ]; then
+		if LC_ALL=C type -t module_sim_slot | grep -q 'function'; then
+			module_sim_slot "${slot}"
+		else
+			echo "Error: Not support action: ${action}"
+			return 1
+		fi
 	else
 		echo "Error: Unknown action: ${action}" >&2
 		echo "Please run \`mx-module-ctl -h\` for help." >&2
@@ -216,6 +228,10 @@ main() {
 			;;
 		"-P" | "--power-status")
 			action="POWER_STATUS"
+			shift 1
+			;;
+		"-I" | "--sim-slot")
+			action="SIM_SLOT"
 			shift 1
 			;;
 		"")
