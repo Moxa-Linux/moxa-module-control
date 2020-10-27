@@ -154,18 +154,38 @@ do_action() {
 	# Actions that need slot ID
 	if [ "${action}" == "POWER" ]; then
 		if [ "${act_arg}" == "on" ]; then
-			module_power_on "${slot}"
+			if LC_ALL=C type -t module_power_on | grep -q 'function'; then
+				module_power_on "${slot}"
+			else
+				echo "Error: This model does not support action: ${action}."
+				return 1
+			fi
 		elif [ "${act_arg}" == "off" ]; then
-			module_power_off "${slot}"
+			if LC_ALL=C type -t module_power_off | grep -q 'function'; then
+				module_power_off "${slot}"
+			else
+				echo "Error: This model does not support action: ${action}."
+				return 1
+			fi
 		else
 			echo "Error: Unknown power action: ${act_arg}" >&2
 			return 1
 		fi
 	elif [ "${action}" == "RESET" ]; then
 		if [ "${act_arg}" == "on" ]; then
-			module_reset_on "${slot}"
+			if LC_ALL=C type -t module_reset_on | grep -q 'function'; then
+				module_reset_on "${slot}"
+			else
+				echo "Error: This model does not support action: ${action}."
+				return 1
+			fi
 		elif [ "${act_arg}" == "off" ]; then
-			module_reset_off "${slot}"
+			if LC_ALL=C type -t module_reset_off | grep -q 'function'; then
+				module_reset_off "${slot}"
+			else
+				echo "Error: This model does not support action: ${action}."
+				return 1
+			fi
 		else
 			echo "Error: Unknown reset action: ${act_arg}" >&2
 			return 1
@@ -175,14 +195,24 @@ do_action() {
 			echo "Error: Invalid sim slot number: ${act_arg}" >&2
 			return 1
 		fi
-		module_switch_sim "${slot}" "${act_arg}"
+		if LC_ALL=C type -t module_switch_sim | grep -q 'function'; then
+			module_switch_sim "${slot}" "${act_arg}"
+		else
+			echo "Error: This model does not support action: ${action}."
+			return 1
+		fi
 	elif [ "${action}" == "POWER_STATUS" ]; then
-		module_power_status "${slot}"
+		if LC_ALL=C type -t module_power_status | grep -q 'function'; then
+			module_power_status "${slot}"
+		else
+			echo "Error: This model does not support action: ${action}."
+			return 1
+		fi
 	elif [ "${action}" == "SIM_SLOT" ]; then
 		if LC_ALL=C type -t module_sim_slot | grep -q 'function'; then
 			module_sim_slot "${slot}"
 		else
-			echo "Error: Not support action: ${action}"
+			echo "Error: This model does not support action: ${action}."
 			return 1
 		fi
 	else
