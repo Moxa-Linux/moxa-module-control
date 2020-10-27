@@ -14,7 +14,6 @@
 
 VERSION=1.5.0
 CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
-MODULE_STATUS_DIR=/etc/moxa-module-control/status.d
 
 #
 # Common functions
@@ -40,7 +39,7 @@ _is_slot_valid() {
 		return 1
 	fi
 
-	if [ ${slot} -le 0 ] || [ ${slot} -gt ${NUM_OF_MODULE_SLOTS} ]; then
+	if [ "${slot}" -le 0 ] || [ "${slot}" -gt "${NUM_OF_MODULE_SLOTS}" ]; then
 		return 1
 	fi
 	return 0
@@ -142,7 +141,7 @@ do_action() {
 	fi
 
 	# Check if slot ID is valid
-	if [ ${NUM_OF_MODULE_SLOTS} -eq 0 ]; then
+	if [ "${NUM_OF_MODULE_SLOTS}" -eq 0 ]; then
 		echo "No module slot on this device." >&2
 		return 1
 	fi
