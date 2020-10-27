@@ -18,6 +18,56 @@ CONFIG_FILE=/etc/moxa-configs/moxa-module-control.conf
 #
 # Common functions
 #
+_gpio_request() {
+	local gpio=${1}
+
+	if [ ! -e "/sys/class/gpio/gpio${gpio}" ]; then
+		if ! echo "${gpio}" > /sys/class/gpio/export; then
+			return 1
+		fi
+	fi
+
+	return 0
+}
+
+_gpio_set_value() {
+	local gpio=${1}
+	local value=${2}
+
+	if ! _gpio_request "${gpio}"; then
+		return 1
+	fi
+
+	case "${value}" in
+	0)
+		if ! echo "low" > "/sys/class/gpio/gpio${gpio}/direction"; then
+			return 1
+		fi
+		;;
+	1)
+		if ! echo "high" > "/sys/class/gpio/gpio${gpio}/direction"; then
+			return 1
+		fi
+		;;
+	esac
+
+	return 0
+}
+
+_gpio_get_value() {
+	local gpio=${1}
+
+	if ! _gpio_request "${gpio}"; then
+		return 1
+	fi
+
+	if ! cat "/sys/class/gpio/gpio${gpio}/value"; then
+		return 1
+	fi
+
+	return 0
+}
+
 _is_number() {
 	local input=${1}
 	local num_regex='^[0-9]+$'
