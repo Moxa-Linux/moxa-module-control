@@ -100,26 +100,28 @@ _set_gpio() {
 	local direction=${2}
 	local value=${3}
 
-	if [ ! -e "/sys/class/gpio/gpio${gpio}" ]; then
-		echo "${gpio}" > "/sys/class/gpio/export"
-		echo "${direction}" > "/sys/class/gpio/gpio${gpio}/direction"
+	if [ "${direction}" == "in" ]; then
+		if ! _gpio_request "${gpio}"; then
+			return 1
+		fi
+
+		return 0
 	fi
-	if [ X"${direction}" == X"out" ]; then
-		echo "${value}" > "/sys/class/gpio/gpio${gpio}/value"
+
+	if ! _gpio_set_value "${gpio}" "${value}"; then
+		return 1
 	fi
+
+	return 0
 }
 
 _get_gpio() {
 	local gpio="${1}"
-	local value
 
-	if [ -e "/sys/class/gpio/gpio${gpio}/value" ]; then
-		value=$(cat "/sys/class/gpio/gpio${gpio}/value")
-	else
+	if ! _gpio_get_value "${gpio}"; then
 		return 1
 	fi
 
-	echo "${value}"
 	return 0
 }
 
