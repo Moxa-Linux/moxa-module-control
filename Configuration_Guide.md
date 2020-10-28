@@ -102,10 +102,21 @@ module_switch_sim() {
 }
 
 module_power_status() {
-	local slot=${1}
-	if [ ${slot} -eq 1 ]; then
-		gpio_get_value 480
+	local slot="${1}"
+	local value
+
+	if [ "${slot}" -eq 1 ]; then
+		value=$(_get_gpio 7)
+		if [ "${value}" -eq 0 ]; then
+			echo "on"
+		elif [ "${value}" -eq 1 ]; then
+			echo "off"
+		else
+			echo "unknown"
+			return 1
+		fi
 	fi
+	return 0
 }
 
 module_sim_slot() {
